@@ -385,6 +385,33 @@ textarea {
   padding: 8px 10px;
 }
 
+.proxy-settings {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.proxy-settings summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.proxy-settings input {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.proxy-settings .hint {
+  margin-top: 6px;
+}
+
+.proxy-settings code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--bg-elev-2);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
 @media (max-width: 760px) {
   .app { flex-direction: column; }
   .sidebar { width: 100%; max-width: none; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); }

@@ -33,15 +33,27 @@ Then visit the printed `http://localhost:...` URL.
 3. Your playlist is saved in the browser (`localStorage`) and reloads automatically next time you open the app. Add multiple playlists and switch between them with the dropdown.
 4. Use the search box and group filter to find a channel, then click it to start playing.
 
-## About CORS (why a stream might not play)
+## Why a stream might not play: mixed content & CORS
 
-Because playback happens directly in your browser, the streaming server itself must allow your browser to fetch it (via CORS headers) for playback to succeed — this is a restriction imposed by browsers, not by this app. Most dedicated IPTV/HLS providers already allow this. If a channel fails to load, it usually means:
+Playback happens directly in your browser, so two browser security rules apply:
 
-- the stream is offline, or
-- the provider blocks cross-origin playback from browsers, or
-- the URL requires a different protocol player (e.g. plain RTMP, which browsers can't play natively).
+- **Mixed content**: if this page is loaded over `https://` (e.g. GitHub Pages) but a playlist/stream URL is plain `http://`, the browser silently blocks the request — no error is even sent, it just fails. This is extremely common with IPTV providers. Opening the app from a plain `http://` origin, or via `file://` (double-clicking `index.html`) is *not* subject to this rule, which is why it can work locally but fail once hosted on an https site.
+- **CORS**: the streaming/playlist server must also allow cross-origin requests for your browser to read the response.
 
-For "From URL" playlist loading specifically, the same CORS rule applies to fetching the `.m3u` file itself — if it fails, download the file and use "Upload file" or "Paste text" instead.
+If a channel or playlist fails specifically on an https-hosted deployment, this is almost always the cause.
+
+### Fix: use the included proxy (`worker.js`)
+
+This repo includes `worker.js`, a small [Cloudflare Worker](https://workers.cloudflare.com/) that re-fetches playlists/streams server-side and re-serves them over https with CORS enabled — including rewriting every URL inside an `.m3u8` playlist (segments, sub-playlists, encryption keys) so the whole playback chain stays proxied.
+
+**Deploy it (free, ~2 minutes, no CLI needed):**
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → sign in / sign up free → **Workers & Pages** → **Create** → **Create Worker**.
+2. Give it a name (e.g. `iptv-proxy`), click **Deploy** to create it, then **Edit code**.
+3. Delete the placeholder code, paste in the contents of [`worker.js`](worker.js), click **Deploy**.
+4. Copy the worker's URL (looks like `https://iptv-proxy.<your-subdomain>.workers.dev`).
+5. In the IPTV player, open **+ Playlist**, expand **Playback proxy (optional)** at the bottom, and paste that URL in.
+
+From then on, playlists and streams are fetched through your own proxy, avoiding both the mixed-content block and CORS issues. Leave the field blank to go back to loading streams directly (fine for `https://` playlists whose server allows CORS).
 
 ## Notes
 

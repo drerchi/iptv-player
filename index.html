@@ -86,6 +86,16 @@
       <input type="text" id="playlistNameInput" placeholder="Playlist name (optional)">
     </div>
     <div id="modalError" class="modal-error" hidden></div>
+
+    <details class="proxy-settings">
+      <summary>Playback proxy (optional)</summary>
+      <input type="url" id="proxyInput" placeholder="https://your-proxy.workers.dev">
+      <p class="hint">
+        Set this if playlists/streams are <code>http://</code> and this page is <code>https://</code>
+        (browsers block that mix), or if a server blocks cross-origin requests. See <code>worker.js</code>
+        in the project for a ready-to-deploy Cloudflare Worker proxy. Leave blank to load streams directly.
+      </p>
+    </details>
   </div>
 </div>
 

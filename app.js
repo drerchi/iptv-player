@@ -3,6 +3,7 @@
 
   const STORAGE_KEY = 'iptv_player_playlists_v1';
   const LAST_PLAYLIST_KEY = 'iptv_player_last_playlist_v1';
+  const PROXY_KEY = 'iptv_player_proxy_base_v1';
   const MAX_STORED_CONTENT_LENGTH = 4 * 1024 * 1024; // 4MB safety cap for localStorage
 
   /** @type {{id:string,name:string,sourceType:'file'|'url'|'paste',url?:string,content?:string,addedAt:number}[]} */
@@ -41,7 +42,24 @@
 
     pasteInput: document.getElementById('pasteInput'),
     loadPasteBtn: document.getElementById('loadPasteBtn'),
+
+    proxyInput: document.getElementById('proxyInput'),
   };
+
+  // ---------- Playback proxy ----------
+  function getProxyBase() {
+    try { return (localStorage.getItem(PROXY_KEY) || '').trim(); } catch (e) { return ''; }
+  }
+
+  function setProxyBase(value) {
+    try { localStorage.setItem(PROXY_KEY, value.trim()); } catch (e) { /* ignore */ }
+  }
+
+  function proxied(url) {
+    const base = getProxyBase();
+    if (!base) return url;
+    return base.replace(/\/$/, '') + '/proxy?url=' + encodeURIComponent(url);
+  }
 
   // ---------- M3U Parsing ----------
   function parseM3U(text) {
@@ -193,7 +211,7 @@
     if (text == null) {
       if (entry.sourceType === 'url' && entry.url) {
         try {
-          const res = await fetch(entry.url);
+          const res = await fetch(proxied(entry.url));
           if (!res.ok) throw new Error('HTTP ' + res.status);
           text = await res.text();
         } catch (e) {
@@ -399,10 +417,11 @@
 
     const video = els.video;
     const looksLikeHls = /\.m3u8?(\?.*)?$/i.test(url) || /\.m3u(\?.*)?$/i.test(url);
+    const playUrlResolved = proxied(url);
 
     if (looksLikeHls && window.Hls && window.Hls.isSupported()) {
       hls = new Hls({ enableWorker: true });
-      hls.loadSource(url);
+      hls.loadSource(playUrlResolved);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setOverlay('', false, true);
@@ -430,14 +449,14 @@
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url;
+      video.src = playUrlResolved;
       video.addEventListener('loadedmetadata', () => {
         setOverlay('', false, true);
         els.npStatus.textContent = 'Playing';
       }, { once: true });
       video.play().catch(() => {});
     } else {
-      video.src = url;
+      video.src = playUrlResolved;
       video.play().then(() => {
         setOverlay('', false, true);
         els.npStatus.textContent = 'Playing';
@@ -514,7 +533,7 @@
     els.loadUrlBtn.disabled = true;
     els.loadUrlBtn.textContent = 'Loading…';
     try {
-      const res = await fetch(url);
+      const res = await fetch(proxied(url));
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       if (!text.includes('#EXT')) {
@@ -525,7 +544,10 @@
       addPlaylist({ name, sourceType: 'url', url, content: text });
       closeModal();
     } catch (e) {
-      showModalError('Could not load playlist from URL: ' + e.message + '. The server may not allow cross-origin requests (CORS).');
+      const proxyHint = getProxyBase()
+        ? ''
+        : ' If the list is http:// (not https://) or the server blocks cross-origin requests, set a playback proxy in settings below.';
+      showModalError('Could not load playlist from URL: ' + e.message + '.' + proxyHint);
     } finally {
       els.loadUrlBtn.disabled = false;
       els.loadUrlBtn.textContent = 'Load from URL';
@@ -581,6 +603,9 @@
 
     els.loadUrlBtn.addEventListener('click', handleLoadUrl);
     els.loadPasteBtn.addEventListener('click', handleLoadPaste);
+
+    els.proxyInput.value = getProxyBase();
+    els.proxyInput.addEventListener('change', () => setProxyBase(els.proxyInput.value));
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !els.modalBackdrop.hidden) closeModal();
