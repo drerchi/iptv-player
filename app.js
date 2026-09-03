@@ -419,6 +419,15 @@
     content.classList.toggle('error', !!isError);
   }
 
+  const MAX_STREAM_RETRIES = 3;
+  const CODEC_ERROR_HINT = "This channel's video/audio codec (e.g. HEVC, MPEG-2, or an uncommon audio format) isn't supported by your browser — this is a browser limitation, not a bug in the app. Try VLC or a dedicated IPTV app for this channel instead.";
+  const VIDEO_ERROR_MESSAGES = {
+    1: 'Playback was aborted.',
+    2: 'Network error while loading this stream. It may be offline, geo-blocked, or blocking automated requests.',
+    3: CODEC_ERROR_HINT,
+    4: "This stream's format isn't supported by your browser. " + CODEC_ERROR_HINT,
+  };
+
   function playUrl(url, channel) {
     if (hls) { hls.destroy(); hls = null; }
 
@@ -434,9 +443,22 @@
     setOverlay('Loading stream…', false);
 
     const video = els.video;
+    video.onerror = null;
     const sniffTarget = unproxiedForSniffing(url);
+
+    let scheme = '';
+    try { scheme = new URL(sniffTarget).protocol; } catch (e) { /* relative/invalid, ignore */ }
+    if (scheme && scheme !== 'http:' && scheme !== 'https:') {
+      setOverlay(`This channel uses the "${scheme.replace(':', '')}" protocol, which no web browser can play (browsers only support http/https streams). Use VLC or a dedicated IPTV app for this channel.`, true);
+      els.npStatus.textContent = 'Unsupported protocol';
+      return;
+    }
+
     const looksLikeHls = /\.m3u8?(\?.*)?$/i.test(sniffTarget) || /\.m3u(\?.*)?$/i.test(sniffTarget);
     const playUrlResolved = proxied(url);
+
+    let networkErrorRetries = 0;
+    let mediaErrorRetries = 0;
 
     if (looksLikeHls && window.Hls && window.Hls.isSupported()) {
       hls = new Hls({ enableWorker: true });
@@ -448,23 +470,38 @@
         video.play().catch(() => {});
       });
       hls.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              els.npStatus.textContent = 'Network error, retrying…';
-              hls.startLoad();
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              els.npStatus.textContent = 'Media error, recovering…';
-              hls.recoverMediaError();
-              break;
-            default:
-              setOverlay('Unable to play this stream (' + (data.details || 'unknown error') + ').', true);
+        if (!data.fatal) return;
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            networkErrorRetries++;
+            if (networkErrorRetries > MAX_STREAM_RETRIES) {
+              setOverlay('This stream is unreachable after several attempts. It may be offline, geo-blocked, or blocking automated requests.', true);
               els.npStatus.textContent = 'Error';
               hls.destroy();
               hls = null;
-              break;
-          }
+            } else {
+              els.npStatus.textContent = `Network error, retrying… (${networkErrorRetries}/${MAX_STREAM_RETRIES})`;
+              hls.startLoad();
+            }
+            break;
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            mediaErrorRetries++;
+            if (mediaErrorRetries > MAX_STREAM_RETRIES) {
+              setOverlay(CODEC_ERROR_HINT, true);
+              els.npStatus.textContent = 'Unsupported codec';
+              hls.destroy();
+              hls = null;
+            } else {
+              els.npStatus.textContent = `Media error, recovering… (${mediaErrorRetries}/${MAX_STREAM_RETRIES})`;
+              hls.recoverMediaError();
+            }
+            break;
+          default:
+            setOverlay('Unable to play this stream (' + (data.details || 'unknown error') + ').', true);
+            els.npStatus.textContent = 'Error';
+            hls.destroy();
+            hls = null;
+            break;
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -479,17 +516,17 @@
       video.play().then(() => {
         setOverlay('', false, true);
         els.npStatus.textContent = 'Playing';
-      }).catch((e) => {
-        setOverlay('Unable to play this stream: ' + e.message, true);
-        els.npStatus.textContent = 'Error';
+      }).catch(() => {
+        // surfaced via video.onerror below with a specific reason
       });
     }
 
     video.onerror = () => {
-      if (!hls) {
-        setOverlay('Unable to play this stream. It may be offline or blocked by CORS.', true);
-        els.npStatus.textContent = 'Error';
-      }
+      if (hls) return; // hls.js already reports its own errors above
+      const code = video.error && video.error.code;
+      const message = VIDEO_ERROR_MESSAGES[code] || 'Unable to play this stream. It may be offline or in a format your browser cannot decode.';
+      setOverlay(message, true);
+      els.npStatus.textContent = 'Error';
     };
   }
 
