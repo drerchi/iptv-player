@@ -1,0 +1,4 @@
+# The Windows desktop app is a separate project (not part of the GitHub
+# Pages site) and its mpv.exe bundle exceeds GitHub's 100MB file limit —
+# keep it out of this repo entirely.
+desktop-app/

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV Remote</title>
+<link rel="stylesheet" href="remote.css">
+</head>
+<body>
+
+<div id="pairView" class="pair-view">
+  <h1>IPTV Remote</h1>
+  <p class="hint">Enter the pairing code shown in the desktop app's Remote Control window.</p>
+  <input id="roomInput" type="text" maxlength="6" placeholder="ABC123" autocapitalize="characters" autocomplete="off">
+  <button id="connectBtn" class="btn btn-primary">Connect</button>
+  <p id="pairError" class="pair-error" hidden></p>
+</div>
+
+<div id="remoteView" class="remote-view" hidden>
+  <header class="remote-header">
+    <div>
+      <div class="room-label">Room <span id="roomLabel"></span></div>
+      <div id="connStatus" class="conn-status">Connecting…</div>
+    </div>
+    <button id="disconnectBtn" class="btn btn-icon" title="Disconnect">✕</button>
+  </header>
+
+  <div class="now-playing-remote">
+    <img id="npLogo" class="np-logo" alt="" hidden>
+    <div class="np-text">
+      <div id="npName" class="np-name">Nothing playing</div>
+    </div>
+    <button id="stopBtn" class="btn btn-icon" title="Stop">■</button>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="channels">Channels</button>
+    <button class="view-tab" data-view="favorites">★ Favorites</button>
+  </div>
+
+  <div class="filters">
+    <input id="searchInput" type="search" placeholder="Search channels…" autocomplete="off">
+    <select id="groupSelect"><option value="">All groups</option></select>
+  </div>
+
+  <div id="channelList" class="channel-list"></div>
+</div>
+
+<script src="remote.js"></script>
+</body>
+</html>
