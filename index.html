@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV Player</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>IPTV Player</h1>
+      <button id="addPlaylistBtn" class="btn btn-primary" title="Add playlist">+ Playlist</button>
+    </div>
+
+    <div class="playlist-select-row">
+      <select id="playlistSelect"></select>
+      <button id="removePlaylistBtn" class="btn btn-icon" title="Remove this playlist">✕</button>
+    </div>
+
+    <div class="filters">
+      <input id="searchInput" type="search" placeholder="Search channels…" autocomplete="off">
+      <select id="groupSelect">
+        <option value="">All groups</option>
+      </select>
+    </div>
+
+    <div id="channelCount" class="channel-count">No playlist loaded</div>
+
+    <div id="channelList" class="channel-list"></div>
+  </aside>
+
+  <main class="player-area">
+    <div class="video-wrap">
+      <video id="video" controls playsinline></video>
+      <div id="playerOverlay" class="player-overlay">
+        <div class="overlay-content">
+          <p>Add a playlist and pick a channel to start watching.</p>
+        </div>
+      </div>
+    </div>
+    <div class="now-playing">
+      <img id="npLogo" class="np-logo" alt="" hidden>
+      <div class="np-text">
+        <div id="npName" class="np-name">No channel selected</div>
+        <div id="npStatus" class="np-status"></div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<div id="modalBackdrop" class="modal-backdrop" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add M3U Playlist</h2>
+      <button id="modalClose" class="btn btn-icon">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" data-tab="file">Upload file</button>
+      <button class="tab-btn" data-tab="url">From URL</button>
+      <button class="tab-btn" data-tab="paste">Paste text</button>
+    </div>
+
+    <div class="tab-panel" data-panel="file">
+      <label class="dropzone" id="dropzone" for="fileInput">
+        <span id="dropzoneText">Drag &amp; drop an .m3u / .m3u8 file here, or click to browse</span>
+        <input type="file" id="fileInput" accept=".m3u,.m3u8,.txt" hidden>
+      </label>
+    </div>
+
+    <div class="tab-panel" data-panel="url" hidden>
+      <input type="url" id="urlInput" placeholder="https://example.com/playlist.m3u8">
+      <p class="hint">Note: the server hosting the playlist must allow cross-origin requests (CORS), or loading will fail.</p>
+      <button id="loadUrlBtn" class="btn btn-primary">Load from URL</button>
+    </div>
+
+    <div class="tab-panel" data-panel="paste" hidden>
+      <textarea id="pasteInput" rows="8" placeholder="#EXTM3U&#10;#EXTINF:-1,Channel Name&#10;http://example.com/stream.m3u8"></textarea>
+      <button id="loadPasteBtn" class="btn btn-primary">Load pasted text</button>
+    </div>
+
+    <div class="modal-footer">
+      <input type="text" id="playlistNameInput" placeholder="Playlist name (optional)">
+    </div>
+    <div id="modalError" class="modal-error" hidden></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+:root {
+  --bg: #0f1115;
+  --bg-elev: #161922;
+  --bg-elev-2: #1e222d;
+  --border: #2a2f3d;
+  --text: #e8eaf0;
+  --text-dim: #9aa0ae;
+  --accent: #5b8cff;
+  --accent-hover: #4577f5;
+  --danger: #ff5b6a;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 340px;
+  min-width: 280px;
+  max-width: 420px;
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebar-header h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.playlist-select-row {
+  display: flex;
+  gap: 6px;
+}
+
+#playlistSelect {
+  flex: 1;
+  min-width: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+}
+
+#searchInput {
+  flex: 1;
+  min-width: 0;
+}
+
+#groupSelect {
+  max-width: 140px;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+.btn {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-icon {
+  padding: 8px 10px;
+  line-height: 1;
+}
+
+.channel-count {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.channel-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: -4px -8px 0;
+  padding: 4px 8px;
+}
+
+.group-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  padding: 10px 6px 4px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+}
+
+.channel-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.channel-item:hover {
+  background: var(--bg-elev-2);
+}
+
+.channel-item.active {
+  background: rgba(91, 140, 255, 0.15);
+  border-color: var(--accent);
+}
+
+.channel-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--bg-elev-2);
+  flex-shrink: 0;
+}
+
+.channel-logo.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.channel-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-state {
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+/* Player area */
+.player-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 14px;
+  min-width: 0;
+}
+
+.video-wrap {
+  position: relative;
+  flex: 1;
+  background: black;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+
+.player-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 11, 15, 0.85);
+  text-align: center;
+  padding: 24px;
+}
+
+.player-overlay.hidden {
+  display: none;
+}
+
+.overlay-content {
+  color: var(--text-dim);
+  max-width: 340px;
+  font-size: 14px;
+}
+
+.overlay-content.error {
+  color: var(--danger);
+}
+
+.now-playing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.np-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.np-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.np-status {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 480px;
+  max-width: 92vw;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.tab-btn.active {
+  background: var(--bg-elev-2);
+  color: var(--text);
+}
+
+.tab-panel[hidden] { display: none; }
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dropzone.dragover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(91, 140, 255, 0.08);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+textarea {
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.modal-footer input {
+  width: 100%;
+}
+
+.modal-error {
+  color: var(--danger);
+  font-size: 13px;
+  background: rgba(255, 91, 106, 0.1);
+  border: 1px solid rgba(255, 91, 106, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+@media (max-width: 760px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; max-width: none; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .player-area { height: 55vh; }
+}
