@@ -4,6 +4,7 @@
   const STORAGE_KEY = 'iptv_player_playlists_v1';
   const LAST_PLAYLIST_KEY = 'iptv_player_last_playlist_v1';
   const PROXY_KEY = 'iptv_player_proxy_base_v1';
+  const DEFAULT_PROXY_BASE = 'https://iptv-proxy.soleral-com.workers.dev';
   const MAX_STORED_CONTENT_LENGTH = 4 * 1024 * 1024; // 4MB safety cap for localStorage
 
   /** @type {{id:string,name:string,sourceType:'file'|'url'|'paste',url?:string,content?:string,addedAt:number}[]} */
@@ -48,7 +49,11 @@
 
   // ---------- Playback proxy ----------
   function getProxyBase() {
-    try { return (localStorage.getItem(PROXY_KEY) || '').trim(); } catch (e) { return ''; }
+    try {
+      const stored = localStorage.getItem(PROXY_KEY);
+      if (stored !== null) return stored.trim();
+    } catch (e) { /* ignore */ }
+    return DEFAULT_PROXY_BASE;
   }
 
   function setProxyBase(value) {
