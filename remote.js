@@ -17,6 +17,7 @@
     pairError: document.getElementById('pairError'),
 
     remoteView: document.getElementById('remoteView'),
+    connInfo: document.getElementById('connInfo'),
     roomLabel: document.getElementById('roomLabel'),
     connStatus: document.getElementById('connStatus'),
     disconnectBtn: document.getElementById('disconnectBtn'),
@@ -63,6 +64,7 @@
       const data = await res.json();
       els.connStatus.textContent = 'Connected';
       els.connStatus.className = 'conn-status connected';
+      els.connInfo.hidden = true; // once paired, the code/status text just takes up space
       if (data) {
         state = { channels: data.channels || [], favorites: data.favorites || [], nowPlaying: data.nowPlaying || null };
         renderNowPlaying();
@@ -70,6 +72,7 @@
         renderChannelList();
       }
     } catch (e) {
+      els.connInfo.hidden = false; // surface the problem again if the connection actually drops
       els.connStatus.textContent = 'Connection lost, retrying…';
       els.connStatus.className = 'conn-status error';
     }
