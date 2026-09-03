@@ -63,7 +63,20 @@
   function proxied(url) {
     const base = getProxyBase();
     if (!base) return url;
-    return base.replace(/\/$/, '') + '/proxy?url=' + encodeURIComponent(url);
+    const normalizedBase = base.replace(/\/$/, '');
+    if (url.startsWith(normalizedBase)) return url; // already proxied (e.g. rewritten server-side inside a fetched playlist)
+    return normalizedBase + '/proxy?url=' + encodeURIComponent(url);
+  }
+
+  // Unwraps a proxied URL back to the real target, for extension-based sniffing (e.g. "looks like .m3u8?").
+  function unproxiedForSniffing(url) {
+    try {
+      const u = new URL(url);
+      const inner = u.searchParams.get('url');
+      return inner || url;
+    } catch (e) {
+      return url;
+    }
   }
 
   // ---------- M3U Parsing ----------
@@ -421,7 +434,8 @@
     setOverlay('Loading stream…', false);
 
     const video = els.video;
-    const looksLikeHls = /\.m3u8?(\?.*)?$/i.test(url) || /\.m3u(\?.*)?$/i.test(url);
+    const sniffTarget = unproxiedForSniffing(url);
+    const looksLikeHls = /\.m3u8?(\?.*)?$/i.test(sniffTarget) || /\.m3u(\?.*)?$/i.test(sniffTarget);
     const playUrlResolved = proxied(url);
 
     if (looksLikeHls && window.Hls && window.Hls.isSupported()) {
