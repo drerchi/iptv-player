@@ -41,6 +41,14 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .hint { color: var(--text-dim); font-size: 13px; }
 
+/* .pair-view / .remote-view both set their own display: flex below, which
+   (being an author rule) otherwise silently outranks the browser's built-in
+   [hidden]{display:none} rule regardless of specificity — so toggling
+   .hidden in JS did nothing visually without this. */
+.pair-view[hidden], .remote-view[hidden] {
+  display: none;
+}
+
 .pair-view {
   max-width: 360px;
   margin: 0 auto;
