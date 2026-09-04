@@ -62,9 +62,10 @@
       const res = await fetch(`${RELAY_BASE}/remote/${encodeURIComponent(room)}/state`);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      els.connStatus.textContent = 'Connected';
-      els.connStatus.className = 'conn-status connected';
-      els.connInfo.hidden = true; // once paired, the code/status text just takes up space
+      // Once a connection actually succeeds, the pairing/status prompt has
+      // served its purpose — remove it for good rather than just hiding it,
+      // so a later transient poll error can't bring it flashing back.
+      if (els.connInfo) { els.connInfo.remove(); els.connInfo = null; }
       if (data) {
         state = { channels: data.channels || [], favorites: data.favorites || [], nowPlaying: data.nowPlaying || null };
         renderNowPlaying();
@@ -72,9 +73,14 @@
         renderChannelList();
       }
     } catch (e) {
-      els.connInfo.hidden = false; // surface the problem again if the connection actually drops
-      els.connStatus.textContent = 'Connection lost, retrying…';
-      els.connStatus.className = 'conn-status error';
+      // Still useful before the first successful connection (e.g. a wrong
+      // pairing code) — but once connInfo has been removed above, this is a
+      // no-op, matching "connection is active" no longer showing a prompt.
+      if (els.connInfo) {
+        els.connInfo.hidden = false;
+        els.connStatus.textContent = 'Connection lost, retrying…';
+        els.connStatus.className = 'conn-status error';
+      }
     }
   }
 
